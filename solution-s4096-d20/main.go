@@ -27,9 +27,13 @@ import (
 	"github.com/tuneinsight/lattigo/v6/core/rlwe"
 )
 
+// The manifest a bundle writes: the point under "point", and how many
+// cases. The point is kept as raw JSON and decoded on its own, so that a
+// manifest which writes the point's fields at the top level is read as
+// well — the C++ driver scans the whole file and both shapes exist.
 type manifest struct {
-	Point
-	Cases int `json:"cases"`
+	Point json.RawMessage `json:"point"`
+	Cases int             `json:"cases"`
 }
 
 func numbered(i int) string { return fmt.Sprintf("%06d", i) }
@@ -197,7 +201,14 @@ func answer() error {
 	if err := json.Unmarshal(raw, &said); err != nil {
 		return err
 	}
-	p := said.Point
+	pointJSON := raw
+	if len(said.Point) > 0 {
+		pointJSON = said.Point
+	}
+	var p Point
+	if err := json.Unmarshal(pointJSON, &p); err != nil {
+		return fmt.Errorf("manifest.json: the point: %w", err)
+	}
 
 	outRoot := filepath.Join(root, "out")
 	if err := os.MkdirAll(outRoot, 0o755); err != nil {
@@ -242,12 +253,14 @@ func answer() error {
 		var inp Inputs
 		inp.A, err = readTensor[float64](caseDir, "a", []int64{int64(p.Slots)})
 		if err != nil {
-			report(outRoot, envelopeSeconds, initSeconds, append(cases, crashed(i, "reading the case: "+err.Error())))
+			cases = append(cases, crashed(i, "reading the case: "+err.Error()))
+			report(outRoot, envelopeSeconds, initSeconds, cases)
 			continue
 		}
 		inp.B, err = readTensor[float64](caseDir, "b", []int64{int64(p.Slots)})
 		if err != nil {
-			report(outRoot, envelopeSeconds, initSeconds, append(cases, crashed(i, "reading the case: "+err.Error())))
+			cases = append(cases, crashed(i, "reading the case: "+err.Error()))
+			report(outRoot, envelopeSeconds, initSeconds, cases)
 			continue
 		}
 
