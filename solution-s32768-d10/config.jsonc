@@ -1,0 +1,26 @@
+// Point s32768-d10: slots 32768, depth 10, security 128, precision 15.
+//
+// The chain is written out as sizes, as Lattigo takes it: a 60-bit first
+// modulus and ten 50-bit primes is log Q 560, and four 60-bit special primes
+// is log P 240 — log QP 800, which is what OpenFHE's own three-digit key
+// switch comes to at this depth. The two rows are then the same parameters
+// said in two notations.
+{
+  "scheme": "ckks",
+  "security": "HEStd_128_classic",
+
+  // 2^16 = 65536, which carries 32768 complex slots: the point's width is
+  // half a ring, exactly as it is for every other answer to this point.
+  "log_n": 16,
+
+  "mult_depth": 10,
+  "scale_mod_size": 50,
+  "first_mod_size": 60,
+
+  // Four 60-bit special primes: log P 240. Fewer and larger would make the
+  // key switch faster and log QP wider, and the floor would have to admit it.
+  "special_mod_count": 4,
+  "special_mod_size": 60,
+
+  "rotation_key_indexes": []
+}

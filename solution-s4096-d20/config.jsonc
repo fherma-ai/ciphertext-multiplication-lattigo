@@ -1,0 +1,26 @@
+// Point s4096-d20: slots 4096, depth 20, security 128, precision 20.
+//
+// The chain is written out as sizes, as Lattigo takes it: a 60-bit first
+// modulus and twenty 48-bit primes is log Q 1020, and six 60-bit special primes
+// is log P 360 — log QP 1380, which is what OpenFHE comes to at this depth
+// and scale. The two rows are then the same parameters said in two
+// notations.
+{
+  "scheme": "ckks",
+  "security": "HEStd_128_classic",
+
+  // 2^16 = 65536 again, and here the depth forces it, not the width: log QP
+  // 1380 bits does not fit a ring of 32768, which carries 881 at 128 bits.
+  "log_n": 16,
+
+  "mult_depth": 20,
+  "scale_mod_size": 48,
+  "first_mod_size": 60,
+
+  // Six 60-bit special primes: log P 360, matching the RNS rows.
+  
+  "special_mod_count": 6,
+  "special_mod_size": 60,
+
+  "rotation_key_indexes": []
+}
